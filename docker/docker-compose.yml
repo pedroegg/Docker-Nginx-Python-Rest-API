@@ -51,7 +51,6 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: sushi2go
       IMGUR_CLIENT_ID: c605c980e891a16
-      IMGUR_CLIENT_SECRET: 4adef6489ecd6d035559445460319dfb8b93d34e
     depends_on: 
       - mariadb
 

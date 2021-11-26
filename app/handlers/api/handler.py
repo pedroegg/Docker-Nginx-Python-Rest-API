@@ -131,9 +131,6 @@ def RegisterOrder(data: dict) -> str:
         
         raise
 
-    #Criar order antes ou pensar em uma forma de incluir essa criação na transaction que atualiza a quantidade das comidas
-    #Ou então fazer de um outro jeito essas transactions de forma que eu possa controlar o banco pelo handler aqui, como externalizar funcao de commit
-    #e de rollback,similar ao que temos no letras
     try:
         orderRepository.Create(order)
     except Exception as e:
