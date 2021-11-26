@@ -1,0 +1,66 @@
+version: "3.7"
+
+services:
+
+  web:
+    image: nginx:1.17
+    ports:
+      - 80:80
+    volumes:
+      - ../php:/var/www/app
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./site.conf:/etc/nginx/conf.d/site.conf
+      - ./app.conf:/etc/nginx/conf.d/default.conf
+      - ./404.html:/usr/share/nginx/html/404.html
+    depends_on:
+      - php
+      - mariadb
+      - app
+
+  php:
+    image: php:7.2-fpm
+    volumes:
+      - ../php:/var/www/app
+      - ./php.ini:/usr/local/etc/php/php.ini
+    depends_on:
+      - mariadb
+
+  mariadb:
+    image: mariadb:10.4
+    ports:
+      - 3306:3306
+    restart: always
+    volumes:
+      - ../database:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: sushi2go
+
+  app:
+    build: ../
+    ports: 
+      - 5000:5000
+    volumes: 
+      - ../app:/code
+    environment: 
+      FLASK_APP: main.py
+      FLASK_ENV: production
+      FLASK_DEBUG: 0
+      FLASK_SECRET_KEY: sushi2go
+      PYTHONUNBUFFERED: 1
+      MYSQL_HOST: docker_mariadb_1
+      MYSQL_USER: root
+      MYSQL_PASSWORD: sushi2go
+      IMGUR_CLIENT_ID: c605c980e891a16
+      IMGUR_CLIENT_SECRET: 4adef6489ecd6d035559445460319dfb8b93d34e
+    depends_on: 
+      - mariadb
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - 8000:80
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mariadb
+    depends_on:
+      - mariadb
