@@ -42,30 +42,11 @@ class MySQL(object, metaclass=SingletonMeta):
         if cls._instance is None:
             cls._instance = object.__new__(cls)
 
-            _user = os.getenv('MYSQL_USER')
-            _password = os.getenv('MYSQL_PASSWORD')
-            _host = os.getenv('MYSQL_HOST')
-
             try:
-                logger.info('new instance of database. trying to connect...')
-                connection = dbConnection.MySQLConnection(
-                    user=_user, 
-                    password=_password, 
-                    host=_host, 
-                    raise_on_warnings=True, 
-                    autocommit=False,
-                    charset='utf8',
-                    use_unicode=True,
-                    time_zone='-03:00'
-                )
-            
-            except DBError as err:
-                logger.error('cannot connect to database: {}'.format(err.msg))
-                MySQL._instance = None
-
+                MySQL._instance.connect()
+            except:
                 raise
-
-            MySQL._instance.connection = connection
+            
             logger.info('connected to database')
 
         return cls._instance
@@ -73,7 +54,41 @@ class MySQL(object, metaclass=SingletonMeta):
     def __init__(self):
         self.connection: dbConnection.MySQLConnection = self._instance.connection
 
+    def connect(self) -> None:
+        _user = os.getenv('MYSQL_USER')
+        _password = os.getenv('MYSQL_PASSWORD')
+        _host = os.getenv('MYSQL_HOST')
+
+        try:
+            logger.info('new instance of database or out of connections. trying to connect...')
+
+            connection = dbConnection.MySQLConnection(
+                user=_user, 
+                password=_password, 
+                host=_host, 
+                raise_on_warnings=True, 
+                autocommit=False,
+                charset='utf8',
+                use_unicode=True,
+                time_zone='-03:00'
+            )
+        
+        except DBError as err:
+            logger.error('cannot connect to database: {}'.format(err.msg))
+            MySQL._instance = None
+
+            raise
+
+        self.connection = connection
+
     def execute(self, query: str, params: tuple = (), usePrepared: bool = False, autoCommit: bool = True) -> Tuple[list, Optional[int]]:
+        if not self.connection.is_connected():
+            try:
+                self.connect()
+            
+            except:
+                raise
+        
         c_class = MySQLCursorDict
         if usePrepared and params != ():
             c_class = MySQLCursorPrepared
@@ -113,6 +128,7 @@ class MySQL(object, metaclass=SingletonMeta):
     def rollback(self):
         try:
             self.connection.rollback()
+        
         except (DBError, InternalError, InterfaceError) as err:
             logger.debug('error trying to rollback transaction: {}'.format(err.msg))
             raise

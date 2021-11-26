@@ -32,6 +32,14 @@ def CreateFood():
 
     return APIHandler.RegisterFood(request.get_json()), 200
 
+@app.route('/order/<int:id>', methods=['GET'])
+def GetOrderByID(id: int):
+    return APIHandler.OrderByID(id), 200
+
+@app.route('/orders', methods=['GET'])
+def GetOrders():
+    return APIHandler.AllOrders(), 200
+
 @app.route('/order/create', methods=['POST'])
 def CreateOrder():
     if not request.is_json:

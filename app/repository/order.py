@@ -2,6 +2,7 @@ from enum import auto
 from typing import List, Optional
 
 from lib.mysql import MySQL
+from model.food import Food
 from model.order import Order, OrderFood
 
 import lib.errors as errors
@@ -63,7 +64,7 @@ def GetAllWithFoods() -> List[Order]:
             raise
 
         for foodRow in resultFoods:
-            order.foods.append(OrderFood(foodRow))
+            order.foods.append(OrderFood(Food(foodRow), foodRow['food_quantity']))
 
         orders.append(order)
 
@@ -98,7 +99,7 @@ def GetByIDWithFoods(id: int) -> Optional[Order]:
         raise
 
     for row in result:
-        order.foods.append(OrderFood(row))
+        order.foods.append(OrderFood(Food(row), row['food_quantity']))
 
     return order
 

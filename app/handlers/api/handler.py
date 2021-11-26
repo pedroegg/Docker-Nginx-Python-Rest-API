@@ -86,6 +86,40 @@ def RegisterFood(data: dict) -> str:
 
     return json.dumps({'response': 'OK'})
 
+def AllOrders() -> str:
+    try:
+        orders = orderRepository.GetAllWithFoods()
+
+    except Exception as e:
+        logger.exception(e)
+        raise
+    
+    jsonList = []
+
+    for order in orders:
+        d = order.__dict__
+        d['foods'] = [{'food': orderFood.food.__dict__, 'quantity': orderFood.quantity} for orderFood in order.foods]
+
+        jsonList.append(d)
+
+    return json.dumps(jsonList, default=str)
+
+def OrderByID(id: int) -> str:
+    try:
+        order = orderRepository.GetByIDWithFoods(id)
+
+    except Exception as e:
+        logger.exception(e)
+        raise
+
+    if order is None:
+        raise errors.OrderNotFound('id', id)
+
+    d = order.__dict__
+    d['foods'] = [{'food': orderFood.food.__dict__, 'quantity': orderFood.quantity} for orderFood in order.foods]
+
+    return json.dumps(d, default=str)
+
 def RegisterOrder(data: dict) -> str:    
     if not ('destiny' in data and 'total_value' in data and 'foods' in data):
         raise errors.BadRequest('missing payload fields')

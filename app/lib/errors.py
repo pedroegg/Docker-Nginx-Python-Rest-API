@@ -26,6 +26,10 @@ class FoodOutOfStock(BadRequest):
     def __init__(self, field: str, value):
         super().__init__(message='food with {} "{}" is out of stock'.format(field, value))
 
+class OrderNotFound(NotFound):
+    def __init__(self, field: str, value):
+        super().__init__(message='order with {} "{}" was not found'.format(field, value))
+
 class FailedUploadFile(InternalError):
     #name = 'FAILED_UPLOAD_FILE'
     def __init__(self):
