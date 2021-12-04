@@ -20,11 +20,26 @@ def GetAll() -> List[Food]:
 
     return foods
 
+def Filter(q: str) -> List[Food]:
+    query = "SELECT * FROM sushi2go.food WHERE name LIKE CONCAT('%', ?, '%')"
+
+    try:
+        result, _ = MySQL().execute(query, (q,), usePrepared=True)
+    except:
+        raise
+
+    foods: List[Food] = []
+
+    for row in result:
+        foods.append(Food(row))
+
+    return foods
+
 def GetByID(id: int) -> Optional[Food]:
     query = "SELECT * FROM sushi2go.food WHERE id = ?"
 
     try:
-        result, _ = MySQL().execute(query, (id,), True)
+        result, _ = MySQL().execute(query, (id,), usePrepared=True)
     except:
         raise
 
@@ -37,7 +52,7 @@ def GetByName(slug: str) -> Optional[Food]:
     query = "SELECT * FROM sushi2go.food WHERE name = ?"
 
     try:
-        result, _ = MySQL().execute(query, (slug,), True)
+        result, _ = MySQL().execute(query, (slug,), usePrepared=True)
     except:
         raise
 
@@ -50,11 +65,31 @@ def Create(food: Food) -> None:
     query = "INSERT INTO sushi2go.food (`name`, `description`, `quantity`, `price`, `image_url`) VALUES (?, ?, ?, ?, ?)"
 
     try:
-       MySQL().execute(query, (food.name, food.description, food.quantity, food.price, food.imageURL,), True)
+        MySQL().execute(query, (food.name, food.description, food.quantity, food.price, food.imageURL,), usePrepared=True)
     except:
         raise
 
-    return 
+    return
+
+def Update(food: Food) -> None:
+    query = "UPDATE sushi2go.food SET name = ?, description = ?, quantity = ?, price = ? WHERE id = ?"
+
+    try:
+        MySQL().execute(query, (food.name, food.description, food.quantity, food.price, food.id,), usePrepared=True)
+    except:
+        raise
+
+    return
+
+def Delete(id: int) -> None:
+    query = "DELETE FROM sushi2go.food WHERE id = ?"
+
+    try:
+        MySQL().execute(query, (id,), usePrepared=True)
+    except:
+        raise
+
+    return
 
 def UpdateFoodsQuantity(foods_payload: List[dict]) -> None:
     queries = []
@@ -63,7 +98,7 @@ def UpdateFoodsQuantity(foods_payload: List[dict]) -> None:
         query = "UPDATE sushi2go.food SET quantity = quantity - ? WHERE id = ?"
 
         try:
-            queries.append(MySQL().query(query, (food_p['quantity_to_subtract'], food_p['id'],), True))
+            queries.append(MySQL().query(query, (food_p['quantity_to_subtract'], food_p['id'],), usePrepared=True))
         except:
             raise
 

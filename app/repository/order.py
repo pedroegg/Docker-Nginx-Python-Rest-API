@@ -104,15 +104,19 @@ def GetByIDWithFoods(id: int) -> Optional[Order]:
     return order
 
 def Create(order: Order) -> None:
-    query = "INSERT INTO sushi2go.order (`destiny`, `total_value`) VALUES (?, ?)"
+    query = "INSERT INTO sushi2go.order (`destiny`, `total_value`, `phone_number`) VALUES (?, ?, ?)"
 
     try:
-        _, last_inserted_id = MySQL().execute(query, params=(order.destiny, order.total_value,), usePrepared=True, autoCommit=False)
+        _, last_inserted_id = MySQL().execute(query, params=(order.destiny, order.total_value, order.phone_number,), usePrepared=True, autoCommit=False)
     except:
         raise
     
     if last_inserted_id is None:
-        MySQL().rollback()
+        try:
+            MySQL().rollback()
+        except:
+            raise errors.InternalError('failed to create order')
+
         raise errors.InternalError('failed to create order')
     
     order.id = last_inserted_id
@@ -128,6 +132,6 @@ def Create(order: Order) -> None:
     try:
         MySQL().commit()
     except:
-        raise
+        raise errors.InternalError('failed to create order')
 
     return 

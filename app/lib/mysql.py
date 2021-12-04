@@ -99,12 +99,12 @@ class MySQL(object, metaclass=SingletonMeta):
             result, column_names, last_inserted_id = execute(cursor, query, params)
 
         except:
-            self.connection.rollback()
+            self.rollback()
             raise
         
         else:
             if autoCommit:
-                self.connection.commit()
+                self.commit()
 
         finally:
             cursor.close()
@@ -154,7 +154,7 @@ class MySQL(object, metaclass=SingletonMeta):
                 execute(cursor, query.query, query.params)
 
             except:
-                self.connection.rollback()
+                self.rollback()
                 raise
 
             finally:
@@ -163,12 +163,7 @@ class MySQL(object, metaclass=SingletonMeta):
                 
                 cursor.close()
 
-        try:
-            self.connection.commit()
-        
-        except (DBError, InternalError, InterfaceError) as err:
-            logger.debug('error trying to commit all transaction queries: {}'.format(err.msg))
-            raise
+        self.commit()
     
     def query(self, query: str, params: tuple = (), usePrepared: bool = False) -> Query:
         q = Query(query, params, usePrepared)

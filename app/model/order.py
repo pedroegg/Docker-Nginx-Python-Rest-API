@@ -8,6 +8,7 @@ class Order():
         self.id = None
         self.destiny: str = str(data['destiny'])
         self.total_value: float = float(data['total_value'])
+        self.phone_number: str = str(data['phone_number'])
         self.foods: List[OrderFood] = []
         self.created_at: datetime.datetime = None
         self.updated_at: datetime.datetime = None
